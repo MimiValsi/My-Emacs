@@ -149,7 +149,7 @@
                 (nnir-search-engine imap)
                 (nnimap-inbox "Inbox")
                 (nnmail-expiry-target
-                 "nnimap+dasilvaf:Trash")
+                 "nnimap+foo:Trash")
                 (nnmail-expiry-wait immediate)))
 
 ;; Send emails
