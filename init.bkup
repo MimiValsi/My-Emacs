@@ -1,0 +1,417 @@
+;; Straight package
+(defvar bootstrap-version)
+(let ((bootstrap-file
+        (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+      (bootstrap-version 6))
+  (unless (file-exists-p bootstrap-file)
+    (with-current-buffer
+      (url-retrieve-synchronously
+      "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
+      'silent 'inhibit-cookies)
+    (goto-char (point-max))
+    (eval-print-last-sexp)))
+(load bootstrap-file nil 'nomessage))
+
+;; Electric pair
+(electric-pair-mode t)
+
+;; Fonts
+(face-spec-set 'default '((t :font "NotoMono Nerd Font")))
+(set-face-attribute 'default nil :height 140)
+
+;; Add newline after file save
+(setq mode-require-final-newline 'visit-save)
+
+;; Clean excess of whitespace
+(add-hook 'before-save-hook 'whitespace-cleanup)
+
+;; Ensure buffers are updated
+(setq auto-revert-verbose t)
+(global-auto-revert-mode)
+
+;; Max column
+(setq-default fill-column 72)
+(global-display-fill-column-indicator-mode)
+
+;; Shortcut to avoid yes or no
+(defalias 'yes-or-no-p 'y-or-n-p)
+
+;; Remove tabs indent
+(setq-default indent-tabs-mode nil)
+
+;; Enable column number
+(setq column-number-mode t)
+
+;; Disable menu / scroll / tool bar
+(menu-bar-mode -1)
+(toggle-scroll-bar -1)
+(tool-bar-mode -1)
+
+;; Remember cursor position in any given file
+(setq save-place-file "~/.emacs.d/saveplace")
+(setq save-place-forget-unreadable-file t)
+(save-place-mode 1)
+
+;; Save opened buffers after crash or kill
+(setq desktop-auto-save-timeout 300)
+(setq desktop-dirname "~/.emacs.d/")
+(setq desktop-base-file-name "desktop")
+(setq desktop-files-not-to-save nil)
+(setq desktop-globals-to-clean nil)
+(setq desktop-load-locked-desktop t)
+(setq desktop-missing-file-warning nil)
+(setq desktop-restore-eager 0)
+(setq desktop-restore-frames nil)
+(setq desktop-save 'ask-if-new)
+(desktop-save-mode 1)
+
+;; Start @ *Scratch*
+(setq initial-buffer-choice 'gnus)
+(setq inhibit-startup-echo-area-message "mimivalsi")
+(setq inhibit-startup-screen t)
+(setq inhibit-startup-buffer-menu t)
+
+;; Emacs backup
+(setq backup-by-copying t)
+
+(setq version-control t)
+(setq delete-old-versions t)
+(setq kept-new-versions 10)
+(setq kept-old-versions 5)
+
+;; By default, Emacs never backs up versioned file.
+(setq vc-make-backup-files t)
+
+(setq backup-directory-alist '(("" . "~/.emacs.d/backup/per-save")))
+
+(defun mimivalsi/force-backup-of-buffer ()
+  ;; Make a special "per session" backup at the first save of each
+  ;; emacs session.
+  (when (not buffer-backed-up)
+    ;; Override the default parameters for per-session backups.
+    (let ((backup-directory-alist '(("" . "~/.emacs.d/backup/per-session")))
+          (kept-new-versions 3))
+      (backup-buffer)))
+  ;; Make a "per save" backup on each save.  The first save results in
+  ;; both a per-session and a per-save backup, to keep the numbering
+  ;; of per-save backups consistent.
+  (let ((buffer-backed-up nil))
+    (backup-buffer)))
+
+(add-hook 'before-save-hook  'mimivalsi/force-backup-of-buffer)
+
+(setq savehist-file "~/.emacs.d/savehist")
+(setq history-length 1000)
+(setq history-delete-duplicates t)
+(setq savehist-save-minibuffer-history t)
+(add-hook 'after-init-hook 'savehist-mode)
+
+;; Open URL on firefox
+(setq browse-url-browser-function 'browse-url-firefox)
+(setq browse-url-new-window-flag t)
+(setq browse-url-firefox-new-window-is-tab t)
+
+;; ---------- Open GNUS (email) ----------
+(global-set-key (kbd "C-c m") 'gnus)
+
+(setq gnus-use-full-window nil)
+(setq gnus-summary-line-format
+      (concat "%U%R %~(max-right 17)~(pad-right 17)&user-date;  "
+              "%~(max-right 20)~(pad-right 20)f %B%s\n"))
+
+(setq gnus-user-date-format-alist '((t . "%d.%m.%Y %H:%M"))
+      gnus-sum-thread-tree-false-root ""
+      gnus-sum-thread-tree-indent " "
+      gnus-sum-thread-tree-root ""
+      gnus-sum-thread-tree-leaf-with-other "├─≻"
+      gnus-sum-thread-tree-single-leaf     "└─≻"
+      gnus-sum-thread-tree-vertical        "│")
+
+(setq gnus-summary-thread-gathering-function
+      'gnus-gather-threads-by-subject)
+
+(setq gnus-thread-sort-functions
+      '(gnus-thread-sort-by-number
+        gnus-thread-sort-by-total-score))
+
+(add-hook 'gnus-group-mode-hook 'gnus-topic-mode)
+
+(setq user-mail-address "<e-mail address")
+(setq user-full-name "<Complete Name")
+(setq message-kill-buffer-on-exit t)
+
+;; Config and receive emails
+(setq gnus-select-method
+        '(nnimap "<e-mail address"
+                (nnimap-address "<Host>")
+                (nnimap-server-port 993)
+                (nnimap-stream ssl)
+                (nnir-search-engine imap)
+                (nnimap-inbox "Inbox")
+                (nnmail-expiry-target
+                 "nnimap+dasilvaf:Trash")
+                (nnmail-expiry-wait immediate)))
+
+;; Send emails
+(setq smtpmail-smtp-server "<Host>")
+(setq smtpmail-stream-type 'starttls)
+(setq smtpmail-smtp-service 587)
+(setq smtpmail-retries 7)
+(setq smtpmail-queue-mail nil)
+(setq send-mail-function 'smtpmail-send-it)
+(setq message-send-mail-function 'smtpmail-send-it)
+
+;; Signatured
+;; (setq gnus-posting-styles
+;;       '((".*"
+;;          (address "<Name><e-mail address>")
+;;          (signature
+;;           "")
+;;          ("X-Message-SMTP-Method"
+;;           "SMTP <Host> 587 <e-mail address>"))))
+
+
+;; eshell
+(global-set-key (kbd "C-c C-e") 'eshell)
+
+;; Package Management
+
+;; install use-package
+(straight-use-package 'use-package)
+
+(setq gcmh-idle-delay 'auto  ; default is 15s
+      gcmh-auto-idle-delay-factor 10
+      gcmh-high-cons-threshold (* 16 1024 1024))  ; 16mb
+
+;; Contacts
+(use-package bbdb
+  ;; :ensure t
+  :straight t
+  :init
+  (bbdb-initialize 'gnus)
+  (bbdb-initialize 'message)
+  :config
+  (setq bbdb-offer-save 1) ; save without asking
+  (setq bbdb-use-pop-up t) ; allow popups for addresses
+  (setq bbdb-electric-p t) ; be disposable with SPC
+  (setq bbdb-popup-target-lines 1) ; very small popup
+  (setq bbdb-dwim-net-address-allow-redundancy t) ; always use full name
+  (setq bbdb-quiet-about-name-mismatches 2) ; shiw name-mismacthes 2 secs
+  (setq bbdb-always-add-address t)
+  (setq bbdb-file "~/.bbdb"))
+
+
+
+
+;; Profile emacs startup
+(add-hook 'emacs-startup-hook
+          (lambda ()
+            (message "*** Emacs loaded in %s with %d garbage collections."
+                     (format "%.2f seconds"
+                             (float-time
+                              (time-subtract after-init-time before-init-time)))
+                     gcs-done)))
+
+;; Rainbow mode
+(use-package rainbow-mode
+  :straight t
+  :config
+  (setq rainbow-ansi-colors nil)
+  (setq rainbow-x-colors nil))
+
+(use-package modus-themes
+  :straight t
+  :config
+  (load-theme 'modus-vivendi t))
+
+;; Highligh keywords used in comments
+(use-package hl-todo
+  :straight t
+  :config
+  (setq hl-todo-keyword-faces
+        '(("TODO"  . "#FF0000")
+          ("DEBUG" . "#1E90FF")
+          ("XXX"   . "#1E90FF")))
+  :hook (prog-mode-hook . hl-todo-mode))
+
+;; Magit Git
+(use-package magit
+  :straight t
+  :config
+  (setq magit-log-margin '(t "%F %R" magit-log-margin-width t 18))
+  :bind
+  ("C-c g" . magit-status))
+
+;; Git commit
+(use-package git-commit
+  :config
+  (setq git-commit-summary-max-length 50)
+  (setq git-commit-known-pseudo-headers
+        '("Signed-off-by"
+          "Modified-by"
+          "Cc"
+          "Suggested-by"
+          "Reported-by"))
+  (setq git-commit-style-convention-checks
+        '(non-empty-second-line
+          overlong-summary-line)))
+
+;; View PDF
+(use-package pdf-tools
+  :straight t
+  :mode
+  ("\\.pdf\\'" . pdf-view-mode)
+  :config
+  (setq-default pdf-view-display-size 'fit-page))
+
+;; Org
+(use-package org
+  :straight t
+  :ensure org-plus-contrib
+  :config
+  (setq org-hide-emphasis-markers t)
+  (setq org-startup-folded t)
+  (setq org-startup-indented t)
+  (setq org-startup-with-inline-images t)
+  (setq org-ellipsis " ▼")
+  (setq org-todo-keywords
+        '((sequence "TODO" "WORK" "STOP" "VERIFY" "|" "DONE" "DELEGATED")))
+  (setq org-todo-keyword-faces
+        '(("TODO" . org-warning)
+          ("WORK" . "yellow")
+          ("STOP" . "red")
+          ("VERIFY" . "orange")
+          ("DONE" . "green")
+          ("DELEGATED" .  "blue"))))
+
+(use-package org-superstar
+  :straight t
+  :config
+  (add-hook 'org-mode-hook (lambda () (org-superstar-mode 1)))
+  :custom
+  (org-superstar-headline-bullets-list '("◉" "○" "●" "○" "●" "○" "●")))
+
+(require 'color)
+
+(set-face-attribute 'org-block nil
+                    :background (color-darken-name
+                                 (face-attribute 'default :background) 3))
+
+(set-face-attribute 'org-block-begin-line nil
+                    :background (color-darken-name
+                                 (face-attribute 'default :background) 3)
+                    :foreground "#4d4d4d")
+
+(set-face-underline 'org-ellipsis nil)
+
+;; Languages Management
+
+;; See CamelCase after multi words
+(add-hook 'prog-mode-hook 'subword-mode)
+
+(use-package highlight-indent-guides
+  :straight t
+  :config
+  (setq highlight-indent-guides-method 'column)
+  :hook
+  ((yaml-mode-hook . highlight-indent-guides-mode)))
+
+;; Eglot
+(use-package eglot
+  :straight t)
+
+;; Go
+(use-package go-mode
+  :straight t
+  :hook (go-mode . eglot-ensure))
+
+;; Company
+(use-package company
+  :straight t
+  :hook (prog-mode . company-mode)
+  :custom
+  (company-minimum-prefix-length 1)
+  (company-idle-delay 0.0))
+
+;; YASnippet
+(use-package yasnippet
+  :straight t
+  :config
+  (add-to-list 'yas-snippet-dirs "~/.emacs.d/snippets")
+  (yas-reload-all)
+  (yas-global-mode 1))
+
+
+;; JavaScript
+(setq js-indent-level 2)
+
+;; Dired
+(use-package dired
+  :config
+  (setq dired-clean-up-buffers-too t) ; Kill buffers deleted in dired
+  (setq dired-recursive-copies 'always) ; Always copy  dirs recursively
+  (setq dired-recursive-deletes 'top) ; Ask before recursively del a dir
+  (setq dired-listing-switches "-alGhvF --group-directories-first"))
+
+
+;; Projectile
+(use-package projectile
+  :straight t
+  :init
+  (projectile-mode +1)
+  :config
+  (setq projectile-project-search-path '("~/Workspace"))
+  (setq projectile-indexing-method 'alien)
+  (setq projectile-sort-order 'access-time)
+  (setq projectile-enable-caching t)
+  (setq projectile-file-exists-remote-cache-expire (* 10 60))
+  :bind
+  (:map projectile-mode-map
+        ("s-p" . projectile-command-map)
+        ("C-c p" . projectile-command-map)))
+
+; helm
+(use-package helm
+  :straight t
+  :ensure t
+  :init
+  (helm-mode 1)
+  :config
+  (setq helm-always-two-window nil)
+  (setq helm-default-display-buffer-functions '(display-buffer-in-side-window))
+  (setq helm-display-buffer-default-height 16)
+  (setq helm-buffer-max-length 30)
+  (setq helm-boring-buffer-regexp-list
+        (list
+         "\\*Customize"
+         "erlang-ls"
+         "magit"
+         "lsp"
+         "\\*org-src"
+         "\\*code-conversion-work\\*"
+         "straight"
+         "\\*Echo Area"
+         "\\*Minibuf"
+         "\\*Shell Command Output\\*"
+         "\\*helm"
+         "\\*godoc "))
+  :bind
+  (("M-x" . helm-M-x)
+   ("C-x C-b" . helm-buffers-list)
+   ("C-x C-y" . helm-show-kill-ring)
+   ("C-x C-f" . helm-find-files)))
+
+;; RFC
+
+(use-package rfc-mode
+  :straight t
+  :config
+  (setq rfc-mode-directory (expand-file-name "~/rfc/"))
+  :bind
+  ("C-c r" . rfc-mode-browse))
+
+;; Shell Script
+(use-package sh-script
+  :mode
+  (("PKGBUILD" . sh-mode)
+   ("Stackfile" . sh-mode)))
