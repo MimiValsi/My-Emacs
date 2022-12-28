@@ -3,13 +3,14 @@
 Change init.bkup to init.el
 
 # Change the follwing parameters
+```
 (setq user-mail-address "foo@bar.net")
 (setq user-full-name "Name")
 (setq message-kill-buffer-on-exit t)
 (setq message-user-fqdn "myspace.foo.net")
 
 ;; Config and receive emails
-(setq gnus-select-method
+(setq gnus-select-method<p>
         '(nnimap "foo@bar.net"
                 (nnimap-address "mail.foo.com")
                 (nnimap-server-port 993)
@@ -29,3 +30,4 @@ Change init.bkup to init.el
 (setq smtpmail-queue-mail nil)
 (setq send-mail-function 'smtpmail-send-it)
 (setq message-send-mail-function 'smtpmail-send-it)
+```
